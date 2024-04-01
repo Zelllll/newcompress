@@ -9,6 +9,29 @@
 using namespace std;
 
 /**
+ * ROM constructor
+ * @param inPath - input decompressed ROM path
+ * @param outPath - output compressed ROM path
+ * @param dmaTableOffset - offset of the file `dmaData` within the ROM
+ */
+Rom::Rom(const string &inPath, const string &outPath, unsigned int dmaTableOffset) {
+    inRomPath = inPath;
+    outRomPath = outPath;
+    loadDecompressedRom();
+    prepareFiles(dmaTableOffset);
+}
+
+/**
+ * Rom destructor
+ */
+Rom::~Rom() {
+    delete romBuf;
+    for (auto* p : romFiles) {
+        delete p;
+    }
+}
+
+/**
  * Reads DMA table from decompressed ROM, and populates the `romFiles` vector
  * @param dmaTableOffset
  */
@@ -55,19 +78,6 @@ void Rom::loadDecompressedRom() {
     auto *arr = new unsigned char[fileSize];
     file.read(reinterpret_cast<char*>(arr), fileSize);
     romBuf = arr;
-}
-
-/**
- * ROM Constructor
- * @param inPath - input decompressed ROM path
- * @param outPath - output compressed ROM path
- * @param dmaTableOffset - offset of the file `dmaData` within the ROM
- */
-Rom::Rom(const string &inPath, const string &outPath, unsigned int dmaTableOffset) {
-    inRomPath = inPath;
-    outRomPath = outPath;
-    loadDecompressedRom();
-    prepareFiles(dmaTableOffset);
 }
 
 /**

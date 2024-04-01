@@ -56,6 +56,11 @@ public:
     Rom(const string &inPath, const string &outPath, unsigned int dmaTableOffset);
 
     /**
+     * Rom destructor
+     */
+    ~Rom();
+
+    /**
      * Marks files for compression with the specified encoding
      * @param args - range expressed in the format of "start1-end1,start2-end2,..."
      */
