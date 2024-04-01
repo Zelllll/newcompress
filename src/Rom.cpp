@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <cassert>
 #include "../include/rom.h"
 
 using namespace std;
@@ -15,7 +16,7 @@ void Rom::prepareFiles(unsigned int dmaTableOffset) {
     for (auto *dmaEntry = reinterpret_cast<DmaEntry *>(&romBuf[dmaTableOffset]);
          dmaEntry->vromEnd != 0; dmaEntry++) {
         if (dmaEntry->romEnd) {
-            cerr << "Rom.splitFiles() : ROM appears to be already compressed" << endl;
+            cerr << "Rom::prepareFiles() : ROM appears to be already compressed" << endl;
         }
 
         auto *curFile = new RomFile;
@@ -75,22 +76,25 @@ Rom::Rom(const string &inPath, const string &outPath, unsigned int dmaTableOffse
  */
 void Rom::markFilesForCompression(const string &args, EncodingType encoder) {
     if (romFiles.empty()) {
-        cerr << "Rom.markFilesForCompression : Failed to mark files for compression, "
+        cerr << "Rom::markFilesForCompression() : Failed to mark files for compression, "
                 "as no files exist in the vector" << endl;
     }
 
-    vector<Range *> ranges = interpretRange(args);
+    vector<int> startVec, endVec;
+    interpretRange(args, startVec, endVec);
 
-    for (auto r: ranges) {
+    assert(startVec.size() == endVec.size());
+
+    for (int i = 0; i < startVec.size(); i++) {
         // swap start and end if necessary
-        if (r->end < r->start) {
-            swap(r->end, r->start);
+        if (startVec[i] > endVec[i]) {
+            swap(startVec[i], endVec[i]);
         }
 
         // mark files for compression
-        for (int i = r->start; i <= r->end; i++) {
-            cout << "Marking file " << i << " for compression..." << endl;
-            romFiles[i]->encoding = encoder;
+        for (int j = startVec[i]; j <= endVec[i]; j++) {
+            cout << "Marking file " << j << " for compression..." << endl;
+            romFiles[j]->encoding = encoder;
         }
     }
 }
