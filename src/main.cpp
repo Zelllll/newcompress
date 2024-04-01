@@ -1,8 +1,4 @@
 #include <iostream>
-#include <vector>
-#include <fstream>
-#include <iterator>
-
 #include "../include/Rom.h"
 
 using namespace std;
