@@ -52,7 +52,7 @@ void Rom::loadDecompressedRom() {
 
     // read the data into the ROM buffer
     auto *arr = new unsigned char[fileSize];
-    file.read((char *) arr, fileSize);
+    file.read(reinterpret_cast<char*>(arr), fileSize);
     romBuf = arr;
 }
 
