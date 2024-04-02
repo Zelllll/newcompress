@@ -4,7 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <cassert>
-#include "../include/rom.h"
+#include "Rom.h"
 
 using namespace std;
 
@@ -91,7 +91,7 @@ void Rom::markFilesForCompression(const string &args, EncodingType encoder) {
     }
 
     vector<int> startVec, endVec;
-    interpretRange(args, startVec, endVec);
+    Utils::interpretRange(args, startVec, endVec);
 
     assert(startVec.size() == endVec.size());
 
