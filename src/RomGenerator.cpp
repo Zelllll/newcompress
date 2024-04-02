@@ -55,12 +55,12 @@ void RomGenerator::inject(RomFile *rf) {
  */
 void RomGenerator::save(const string& outPath) {
     // swap the endianness of the DMA table to big endian for N64
-    rom->swapDmaEndianess();
+    rom->swapDmaEndianness();
 
     bool success = Utils::writeUnsignedCharArrayToFile(compressedRomBuf, rom->getDecompressedRomSize(), outPath);
 
     // revert DMA table to little endian
-    rom->swapDmaEndianess();
+    rom->swapDmaEndianness();
 
     if (!success) {
         std::cerr << "Failed to write output ROM" << std::endl;

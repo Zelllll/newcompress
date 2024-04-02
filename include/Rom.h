@@ -81,7 +81,7 @@ public:
      * Note: Any time this function is used, it is expected to be called again
      * afterwards, in order to reverse the endianness to its previous state.
      */
-    void swapDmaEndianess();
+    void swapDmaEndianness();
 
     /**
      * Compresses files and writes output ROM

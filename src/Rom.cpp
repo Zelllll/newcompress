@@ -60,7 +60,7 @@ void Rom::prepareFiles(unsigned int dmaTableOffset) {
     }
 
     // byte swap to little endian
-    swapDmaEndianess();
+    swapDmaEndianness();
 }
 
 /**
@@ -135,7 +135,7 @@ unsigned const char* Rom::getDecompressedRomData() const {
  * Note: Any time this function is used, it is expected to be called again
  * afterwards, in order to reverse the endianness to its previous state.
  */
-void Rom::swapDmaEndianess() {
+void Rom::swapDmaEndianness() {
     for (auto* r : romFiles) {
         r->dmaEntry.vromStart = _byteswap_ulong(r->dmaEntry.vromStart);
         r->dmaEntry.vromEnd = _byteswap_ulong(r->dmaEntry.vromEnd);
