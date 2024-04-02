@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_executable(newcompress src/main.cpp
-        include/utils.h
-        src/utils.cpp
-        include/Rom.h
-        src/Rom.cpp)
+        src/Utils.cpp
+        src/Rom.cpp
+        src/RomGenerator.cpp)

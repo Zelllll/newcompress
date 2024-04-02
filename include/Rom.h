@@ -1,9 +1,6 @@
 #pragma once
-
-#include <iostream>
+#include <string>
 #include <vector>
-#include <fstream>
-#include "../include/utils.h"
 
 using namespace std;
 
@@ -23,15 +20,16 @@ struct DmaEntry {
 
 struct RomFile {
     unsigned char *decompressedData;
-    unsigned char *compressedData;
     EncodingType encoding;
     DmaEntry dmaEntry;
 };
 
 class Rom {
+private:
     string inRomPath;
     string outRomPath;
     unsigned char *romBuf = nullptr;
+    size_t romBufSize = 0;
     vector<RomFile *> romFiles;
 
     /**
@@ -67,7 +65,23 @@ public:
     void markFilesForCompression(const string &args, EncodingType encoder);
 
     /**
+     * Gets the current size of the `romBuf` array, which stores the decompressed size
+     * @return
+     */
+    [[nodiscard]] size_t getDecompressedRomSize() const;
+
+    /**
+     * Swaps the endianness of entries within the DMA table
+     * Note: Any time this function is used, it is expected to be called again
+     * afterwards, in order to reverse the endianness to its previous state.
+     */
+    void swapDmaEndianess();
+
+    /**
      * Compresses files and writes output ROM
      */
     void write();
+
+    [[nodiscard]] unsigned const char* getDecompressedRomData() const;
 };
+

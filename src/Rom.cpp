@@ -4,7 +4,10 @@
 #include <vector>
 #include <fstream>
 #include <cassert>
+#include <memory>
 #include "Rom.h"
+#include "Utils.h"
+#include "RomGenerator.h"
 
 using namespace std;
 
@@ -25,7 +28,7 @@ Rom::Rom(const string &inPath, const string &outPath, unsigned int dmaTableOffse
  * Rom destructor
  */
 Rom::~Rom() {
-    delete romBuf;
+    delete[] romBuf;
     for (auto* p : romFiles) {
         delete p;
     }
@@ -44,11 +47,11 @@ void Rom::prepareFiles(unsigned int dmaTableOffset) {
 
         auto *curFile = new RomFile;
 
-        // byte swap since N64 is big endian
-        curFile->dmaEntry.vromStart = _byteswap_ulong(dmaEntry->vromStart);
-        curFile->dmaEntry.vromEnd = _byteswap_ulong(dmaEntry->vromEnd);
-        curFile->dmaEntry.romStart = _byteswap_ulong(dmaEntry->romStart);
-        curFile->dmaEntry.romEnd = _byteswap_ulong(dmaEntry->romEnd);
+        // set each field
+        curFile->dmaEntry.vromStart = dmaEntry->vromStart;
+        curFile->dmaEntry.vromEnd =   dmaEntry->vromEnd;
+        curFile->dmaEntry.romStart =  dmaEntry->romStart;
+        curFile->dmaEntry.romEnd =    dmaEntry->romEnd;
 
         // populate file parameters
         curFile->decompressedData = &romBuf[curFile->dmaEntry.vromStart];
@@ -57,6 +60,9 @@ void Rom::prepareFiles(unsigned int dmaTableOffset) {
         // write file pointer to vector
         romFiles.push_back(curFile);
     }
+
+    // byte swap to little endian
+    swapDmaEndianess();
 }
 
 /**
@@ -75,6 +81,7 @@ void Rom::loadDecompressedRom() {
     file.seekg(0, std::ios::beg);
 
     // read the data into the ROM buffer
+    romBufSize = fileSize;
     auto *arr = new unsigned char[fileSize];
     file.read(reinterpret_cast<char*>(arr), fileSize);
     romBuf = arr;
@@ -110,8 +117,45 @@ void Rom::markFilesForCompression(const string &args, EncodingType encoder) {
 }
 
 /**
+ * Gets the current size of the `romBuf` array, which stores the decompressed size
+ * @return
+ */
+size_t Rom::getDecompressedRomSize() const {
+    return romBufSize;
+}
+
+/**
+ * Returns a constant pointer to the decompressed ROM buffer
+ * @return
+ */
+unsigned const char* Rom::getDecompressedRomData() const {
+    return romBuf;
+}
+
+/**
+ * Swaps the endianness of entries within the DMA table
+ * Note: Any time this function is used, it is expected to be called again
+ * afterwards, in order to reverse the endianness to its previous state.
+ */
+void Rom::swapDmaEndianess() {
+    for (auto* r : romFiles) {
+        r->dmaEntry.vromStart = _byteswap_ulong(r->dmaEntry.vromStart);
+        r->dmaEntry.vromEnd = _byteswap_ulong(r->dmaEntry.vromEnd);
+        r->dmaEntry.romStart = _byteswap_ulong(r->dmaEntry.romStart);
+        r->dmaEntry.romEnd = _byteswap_ulong(r->dmaEntry.romEnd);
+    }
+}
+
+/**
  * Compresses files and writes output ROM
  */
 void Rom::write() {
+    unique_ptr<RomGenerator> romGenerator(new RomGenerator(this));
 
+    for (auto* r : romFiles) {
+        romGenerator->inject(r);
+    }
+
+    romGenerator->save(outRomPath);
 }
+
