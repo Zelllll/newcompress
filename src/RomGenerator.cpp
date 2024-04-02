@@ -9,16 +9,14 @@
 RomGenerator::RomGenerator(Rom *romP) {
     size_t maxBufSize = romP->getDecompressedRomSize();
     rom = romP;
-    encoderBuf = new unsigned char[maxBufSize];
-    compressedRomBuf = new unsigned char[maxBufSize];
+    compRomBuf = new unsigned char[maxBufSize];
 }
 
 /**
  * RomGenerator destructor
  */
 RomGenerator::~RomGenerator() {
-    delete[] encoderBuf;
-    delete[] compressedRomBuf;
+    delete[] compRomBuf;
 }
 
 /**
@@ -37,7 +35,7 @@ void RomGenerator::inject(RomFile *rf) {
         assert(rf->dmaEntry.vromStart + i < rom->getDecompressedRomSize());
         assert(writePosition < rom->getDecompressedRomSize());
 
-        compressedRomBuf[writePosition] = decRomData[rf->dmaEntry.vromStart + i];
+        compRomBuf[writePosition] = decRomData[rf->dmaEntry.vromStart + i];
         writePosition++;
     }
 
@@ -57,14 +55,13 @@ void RomGenerator::save(const string& outPath) {
     // swap the endianness of the DMA table to big endian for N64
     rom->swapDmaEndianness();
 
-    bool success = Utils::writeUnsignedCharArrayToFile(compressedRomBuf, rom->getDecompressedRomSize(), outPath);
+    // TODO: rewrite dma table!!!
 
-    // revert DMA table to little endian
+    // write ROM to disk
+    Utils::writeArrayToFile(compRomBuf, rom->getDecompressedRomSize(), outPath);
+
+    // revert internal DMA table to little endian
     rom->swapDmaEndianness();
 
-    if (!success) {
-        std::cerr << "Failed to write output ROM" << std::endl;
-    } else {
-        std::cout << "Successfully wrote " << outPath << "!" << std::endl;
-    }
+    std::cout << "Successfully wrote " << outPath << "!" << std::endl;
 }

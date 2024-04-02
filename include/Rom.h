@@ -28,7 +28,7 @@ class Rom {
 private:
     string inRomPath;
     string outRomPath;
-    unsigned char *romBuf = nullptr;
+    unsigned char *decRomBuf = nullptr;
     size_t romBufSize = 0;
     vector<RomFile *> romFiles;
 
@@ -37,12 +37,6 @@ private:
      * @param dmaTableOffset
      */
     void prepareFiles(unsigned int dmaTableOffset);
-
-    /**
-     * Loads decompressed ROM data into `romBuf`.
-     * Before running this, `romBuf` will be equal to nullptr
-     */
-    void loadDecompressedRom();
 
 public:
     /**
@@ -71,7 +65,7 @@ public:
     [[nodiscard]] unsigned const char* getDecompressedRomData() const;
 
     /**
-     * Gets the current size of the `romBuf` array, which stores the decompressed size
+     * Gets the current size of the `decRomBuf` array, which stores the decompressed size
      * @return
      */
     [[nodiscard]] size_t getDecompressedRomSize() const;

@@ -58,13 +58,53 @@ namespace Utils {
      * @param filePath - output file path
      * @return - returns true if successful
      */
-    bool writeUnsignedCharArrayToFile(const unsigned char* data, size_t size, const std::string& filePath) {
+    void writeArrayToFile(const unsigned char* data, size_t size, const std::string& filePath) {
+        // open file in binary mode
         std::ofstream file(filePath, std::ios::binary);
+
         if (!file.is_open()) {
-            return false; // Failed to open file
+            std::cerr << "Utils::writeArrayToFile() : " << filePath << " is inaccessible!" << std::endl;
+            return;
         }
 
+        // attempt to write file to disk
         file.write(reinterpret_cast<const char*>(data), static_cast<std::streamsize>(size));
-        return file.good(); // Return true if write was successful
+
+        if (!file.good()) {
+            std::cerr << "Utils::writeArrayToFile() : " << filePath << " is inaccessible!" << std::endl;
+            return;
+        }
+    }
+
+    /**
+     * Reads a file into an unsigned char array
+     * @param filePath - output file path
+     * @param bufSize - reference to output the allocated buffer size
+     * @return - returns true if successful
+     */
+    unsigned char* readFileIntoArray(const std::string& filePath, size_t& bufSize) {
+        // open file in binary mode
+        std::ifstream file(filePath, std::ios::binary);
+        file.unsetf(std::ios::skipws);
+
+        if (!file.is_open()) {
+            std::cerr << "Utils::readFileIntoArray() : " << filePath << " is inaccessible!" << std::endl;
+            return nullptr;
+        }
+
+        // get size of the file
+        file.seekg(0, std::ios::end);
+        bufSize = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        // allocate array
+        auto *arr = new unsigned char[bufSize];
+
+        // Read the file into the buffer
+        if (file.read(reinterpret_cast<char*>(arr), static_cast<std::streamsize>(bufSize))) {
+            return arr; // Successfully read the file
+        } else {
+            return nullptr; // Failed to read the file
+        }
     }
 }

@@ -39,5 +39,12 @@ namespace Utils {
      * @param filePath - output file path
      * @return - returns true if successful
      */
-    bool writeUnsignedCharArrayToFile(const unsigned char* data, size_t size, const std::string& filePath);
+    void writeArrayToFile(const unsigned char* data, size_t size, const std::string& filePath);
+
+    /**
+     * Reads a file into an unsigned char array
+     * @param filePath - output file path
+     * @return - returns true if successful
+     */
+    unsigned char* readFileIntoArray(const std::string& filePath, size_t& bufSize);
 }

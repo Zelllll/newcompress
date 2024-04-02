@@ -5,11 +5,9 @@
 
 class RomGenerator {
 private:
-    unsigned char *compressedRomBuf;
-    unsigned char *encoderBuf;
+    unsigned char *compRomBuf;
     int writePosition = 0;
     Rom *rom;
-
 
 public:
     /**

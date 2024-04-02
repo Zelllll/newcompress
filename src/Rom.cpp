@@ -18,7 +18,15 @@ using namespace std;
 Rom::Rom(const string &inPath, const string &outPath, unsigned int dmaTableOffset) {
     inRomPath = inPath;
     outRomPath = outPath;
-    loadDecompressedRom();
+
+    // load and allocate decompressed rom
+    size_t sz;
+    decRomBuf = Utils::readFileIntoArray(inRomPath, sz);
+    romBufSize = sz;
+    assert(decRomBuf != nullptr);
+    assert(romBufSize > 0);
+
+    // split ROM files and retrieve their DMA table entries
     prepareFiles(dmaTableOffset);
 }
 
@@ -26,7 +34,7 @@ Rom::Rom(const string &inPath, const string &outPath, unsigned int dmaTableOffse
  * Rom destructor
  */
 Rom::~Rom() {
-    delete[] romBuf;
+    delete[] decRomBuf;
     for (auto* p : romFiles) {
         delete p;
     }
@@ -37,7 +45,7 @@ Rom::~Rom() {
  * @param dmaTableOffset
  */
 void Rom::prepareFiles(unsigned int dmaTableOffset) {
-    for (auto *dmaEntry = reinterpret_cast<DmaEntry *>(&romBuf[dmaTableOffset]);
+    for (auto *dmaEntry = reinterpret_cast<DmaEntry *>(&decRomBuf[dmaTableOffset]);
          dmaEntry->vromEnd != 0; dmaEntry++) {
         if (dmaEntry->romEnd) {
             cerr << "Rom::prepareFiles() : ROM appears to be already compressed" << endl;
@@ -52,7 +60,7 @@ void Rom::prepareFiles(unsigned int dmaTableOffset) {
         curFile->dmaEntry.romEnd =    dmaEntry->romEnd;
 
         // populate file parameters
-        curFile->decompressedData = &romBuf[curFile->dmaEntry.vromStart];
+        curFile->decompressedData = &decRomBuf[curFile->dmaEntry.vromStart];
         curFile->encoding = ENC_NONE;
 
         // write file pointer to vector
@@ -61,28 +69,6 @@ void Rom::prepareFiles(unsigned int dmaTableOffset) {
 
     // byte swap to little endian
     swapDmaEndianness();
-}
-
-/**
- * Loads decompressed ROM data into `romBuf`.
- * Before running this, `romBuf` will be equal to nullptr
- */
-void Rom::loadDecompressedRom() {
-    // load decompressed ROM file
-    std::ifstream file(inRomPath, std::ios::binary);
-    file.unsetf(std::ios::skipws);
-
-    // obtain decompressed ROM size
-    std::streampos fileSize;
-    file.seekg(0, std::ios::end);
-    fileSize = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    // read the data into the ROM buffer
-    romBufSize = fileSize;
-    auto *arr = new unsigned char[fileSize];
-    file.read(reinterpret_cast<char*>(arr), fileSize);
-    romBuf = arr;
 }
 
 /**
@@ -115,7 +101,7 @@ void Rom::markFilesForCompression(const string &args, EncodingType encoder) {
 }
 
 /**
- * Gets the current size of the `romBuf` array, which stores the decompressed size
+ * Gets the current size of the `decRomBuf` array, which stores the decompressed size
  * @return
  */
 size_t Rom::getDecompressedRomSize() const {
@@ -127,7 +113,7 @@ size_t Rom::getDecompressedRomSize() const {
  * @return
  */
 unsigned const char* Rom::getDecompressedRomData() const {
-    return romBuf;
+    return decRomBuf;
 }
 
 /**
