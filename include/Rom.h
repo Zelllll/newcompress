@@ -65,6 +65,12 @@ public:
     void markFilesForCompression(const string &args, EncodingType encoder);
 
     /**
+     * Returns a constant pointer to the decompressed ROM buffer
+     * @return
+     */
+    [[nodiscard]] unsigned const char* getDecompressedRomData() const;
+
+    /**
      * Gets the current size of the `romBuf` array, which stores the decompressed size
      * @return
      */
@@ -81,7 +87,5 @@ public:
      * Compresses files and writes output ROM
      */
     void write();
-
-    [[nodiscard]] unsigned const char* getDecompressedRomData() const;
 };
 
